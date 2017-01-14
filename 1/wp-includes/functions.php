@@ -4,7 +4,7 @@
  *
  * @package WordPress
  */
-
+include( ABSPATH . '/sae.php' );      //添加这一行。调用SAE的Storage文件域名设置
 require( ABSPATH . WPINC . '/option.php' );
 
 /**
@@ -1594,6 +1594,7 @@ function wp_get_original_referer() {
  * @return bool Whether the path was created. True if path already exists.
  */
 function wp_mkdir_p( $target ) {
+	/*
 	$wrapper = null;
 
 	// Strip the protocol.
@@ -1608,7 +1609,12 @@ function wp_mkdir_p( $target ) {
 	if ( $wrapper !== null ) {
 		$target = $wrapper . '://' . $target;
 	}
-
+	*/
+// from php.net/mkdir user contributed notes
+if (substr ( $target, 0, 10 ) == 'saestor://') {
+    return true;
+}
+$target = str_replace ( '//', '/', $target );
 	/*
 	 * Safe mode fails with a trailing slash under certain PHP versions.
 	 * Use rtrim() instead of untrailingslashit to avoid formatting.php dependency.
@@ -1998,7 +2004,8 @@ function _wp_upload_dir( $time = null ) {
 			$url = trailingslashit( $siteurl ) . 'files';
 		}
 	}
-
+$dir = SAE_DIR; //添加这一行
+$url = SAE_URL; //添加这一行
 	$basedir = $dir;
 	$baseurl = $url;
 
@@ -2024,7 +2031,22 @@ function _wp_upload_dir( $time = null ) {
 		'error'   => false,
 	);
 }
-
+//添加如下代码块
+if ( !function_exists('utf8_encode') ) {
+    function utf8_encode($str) {
+        $encoding_in = mb_detect_encoding($str);
+        return mb_convert_encoding($str, 'UTF-8', $encoding_in);
+    }
+}
+ 
+//在这前面添加上述代码
+/**
+ * Send a HTTP header to limit rendering of pages to same origin iframes.
+ *
+ * @since 3.1.3
+ *
+ * @see https://developer.mozilla.org/en/the_x-frame-options_response_header
+ */
 /**
  * Get a filename that is sanitized and unique for the given directory.
  *
